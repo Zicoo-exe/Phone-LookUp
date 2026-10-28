@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phone Number Lookup</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 500px;
+            width: 100%;
+            padding: 40px;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .subtitle {
+            color: #666;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .input-hint {
+            color: #999;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .results {
+            display: none;
+            margin-top: 30px;
+            padding-top: 30px;
+            border-top: 2px solid #eee;
+        }
+
+        .results.show {
+            display: block;
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            border-left: 4px solid #667eea;
+        }
+
+        .result-label {
+            color: #666;
+            font-size: 12px;
+            text-transform: uppercase;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .result-value {
+            color: #333;
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .error {
+            background: #fee;
+            color: #c33;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #c33;
+            display: none;
+        }
+
+        .error.show {
+            display: block;
+            animation: slideDown 0.3s ease;
+        }
+
+        .flag {
+            font-size: 24px;
+            margin-right: 10px;
+        }
+
+        .country-info {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            color: #667eea;
+            margin-top: 20px;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .success-badge {
+            display: inline-block;
+            background: #4caf50;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+
+        .copy-btn {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            margin-left: 10px;
+            border: none;
+            transition: background 0.2s;
+        }
+
+        .copy-btn:hover {
+            background: #764ba2;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📱 Phone Lookup</h1>
+        <p class="subtitle">Enter a phone number to view details</p>
+
+        <div class="input-group">
+            <label for="phoneInput">Phone Number</label>
+            <input 
+                type="text" 
+                id="phoneInput" 
+                placeholder="e.g., +1234567890 or 1234567890"
+                autocomplete="off"
+            >
+            <div class="input-hint">Include country code for best results (e.g., +1, +44, +91)</div>
+        </div>
+
+        <button onclick="searchPhone()">Search</button>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Analyzing phone number...</p>
+        </div>
+
+        <div class="error" id="error"></div>
+
+        <div class="results" id="results">
+            <div class="country-info">
+                <span class="flag" id="flag"></span>
+                <div>
+                    <div class="result-label">Country</div>
+                    <div class="result-value" id="countryName"></div>
+                </div>
+            </div>
+
+            <div class="result-item">
+                <div class="result-label">Country Code</div>
+                <div class="result-value" id="countryCode"></div>
+            </div>
+
+            <div class="result-item">
+                <div class="result-label">Phone Number</div>
+                <div class="result-value" id="phoneFormatted">
+                    <span id="phoneValue"></span>
+                    <button class="copy-btn" onclick="copyToClipboard('phoneValue')">Copy</button>
+                </div>
+            </div>
+
+            <div class="result-item">
+                <div class="result-label">Number Type</div>
+                <div class="result-value" id="numberType"></div>
+            </div>
+
+            <div class="result-item">
+                <div class="result-label">Region</div>
+                <div class="result-value" id="region"></div>
+            </div>
+
+            <div class="result-item">
+                <div class="result-label">Carrier/Provider</div>
+                <div class="result-value" id="carrier"></div>
+            </div>
+
+            <div class="result-item">
+                <div class="result-label">Valid Format</div>
+                <div class="result-value" id="isValid"></div>
+            </div>
+
+            <div class="result-item">
+                <div class="result-label">Possible Formats</div>
+                <div class="result-value" id="formats"></div>
+            </div>
+
+            <div class="result-item">
+                <div class="result-label">Timezone</div>
+                <div class="result-value" id="timezone"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="phone-data.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
